@@ -1,0 +1,33 @@
+
+body {
+    text-align: center;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+table {
+    background-color: rgb(255, 200, 200);
+}
+
+td {
+    padding: 3px 8px;
+    background-color: rgb(200, 200, 255);
+    width: 11px;
+    text-align: center;
+}
+
+#container {
+    display: inline-block;
+    margin: 30px auto 30px;
+}
+
+#reset {
+    margin-bottom: 10px;
+}
+
+.winner {
+    font-size: 2rem;
+    color: red;
+    font-weight: 800;
+}
