@@ -192,7 +192,7 @@ function reset() {
             fieldRepr[i][j].innerText = game.playerRepr(game.field[i][j]);
         }
     }
-    infoBox.innerText = 'current: '+game.playerRepr(game.currentPlayer);
+    infoBox.innerText = 'Tic Tac Toe';
     infoBox.className = '';
 }
 reset();
