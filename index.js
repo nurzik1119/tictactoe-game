@@ -5,14 +5,6 @@ const container = document.getElementById('container');
 const infoBox = document.getElementById('info-box');
 const resetButton = document.getElementById('reset');
 
-function dataToRepr(value) {
-    switch (value) {
-        case 0: return '-';
-        case 1: return 'x';
-        case 2: return '0';
-        default: return '?';
-    }
-}
 
 function initField(container, state, onCellClick) {
     const table = document.createElement('table');
@@ -33,7 +25,7 @@ function initField(container, state, onCellClick) {
             }
             tData.dataset.y = j;
             tData.dataset.x = i;
-            tData.innerText = dataToRepr(data);
+            tData.innerText = game.playerRepr(data);
             tRow.appendChild(tData);
             fieldRepr[i][j] = tData;
         }
@@ -42,10 +34,14 @@ function initField(container, state, onCellClick) {
 }
 
 
-function InputResult(player, win) {
+function InputResult(player, type) {
     this.player = player;
-    this.win = win;
+    this.type = type;
 }
+
+InputResult.OK = 'OK';
+InputResult.WIN = 'WIN';
+InputResult.INGORED = 'INGORED';
 
 
 const game = {
@@ -78,14 +74,19 @@ const game = {
         if (value === 0) {
             this.field[x][y] = current;
             if (this.calculateWinner()) {
-                return new InputResult(this.field[x][y], true);
+                return new InputResult(this.field[x][y], InputResult.WIN);
             }
             this.togglePlayer();
+            return new InputResult(this.field[x][y], InputResult.OK);
         }
-        return new InputResult(this.field[x][y], false);
+        return new InputResult(this.field[x][y], InputResult.INGORED);
     },
     calculateWinner: function () {
-        return this._calculateRows() || this._calculateColumns() || this._calculateDiagonals();
+        const rw = this._calculateRows()
+        const cw = this._calculateColumns()
+        const dw = this._calculateDiagonals();
+        // print(rw, cw, dw)
+        return rw || cw || dw;
     },
     _calculateRows: function () {
         for (let i = 0; i < 3; i++) {
@@ -119,6 +120,10 @@ const game = {
     },
     _calculateDiagonals: function () {
 
+        // 0 0
+        // 1 1
+        // 2 2
+
         let firstValue = this.field[0][0];
         let isSamePlayer = true;
         for (let i = 1; i < 3; i++) {
@@ -130,11 +135,15 @@ const game = {
         if (isSamePlayer && firstValue !== 0) {
             return firstValue;
         }
+
+        // 2 0
+        // 1 1
+        // 0 2
         
         firstValue = this.field[2][0];
         isSamePlayer = true;
-        for (let i = 2; i < 0; i--) {
-            if (this.field[i][i] !== firstValue) {
+        for (let i = 1; i < 3; i++) {
+            if (this.field[2-i][i] !== firstValue) {
                 isSamePlayer = false;
                 break;
             }
@@ -143,6 +152,14 @@ const game = {
             return firstValue;
         }
     }, 
+    playerRepr: function (player = this.currentPlayer) {
+        switch (player) {
+            case 0: return '-';
+            case 1: return 'x';
+            case 2: return '0';
+            default: return '?';
+        }
+    },
 }
 
 
@@ -150,17 +167,19 @@ function onCellClick(e) {
     const el = e.target;
     // const {x, y} = el.dataset;
     const x = el.dataset.x, y = el.dataset.y;
-    // print(x, y);
     const inputResult = game.input(x, y);
-    const playerRepr = dataToRepr(inputResult.player);
+    // print(x, y, '->', inputResult)
+    const playerRepr = game.playerRepr(inputResult.player);
     el.innerText = playerRepr;
-    if (inputResult.win) {
+    if (inputResult.type === InputResult.WIN) {
         infoBox.innerHTML = playerRepr + ' WON!';
         infoBox.className = 'winner';
+    } else if (inputResult.type === InputResult.OK) {
+        infoBox.innerText = 'current: '+game.playerRepr(game.currentPlayer);
     } else {
-        infoBox.innerText = 'current: '+dataToRepr(game.currentPlayer);
+        infoBox.innerText = game.playerRepr()+ ': wrong step!'
     }
-    print(game.field);
+    // print(game.field);
 }
 
 
@@ -170,10 +189,10 @@ function reset() {
     game.reset();
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
-            fieldRepr[i][j].innerText = dataToRepr(game.field[i][j]);
+            fieldRepr[i][j].innerText = game.playerRepr(game.field[i][j]);
         }
     }
-    infoBox.innerText = 'current: '+dataToRepr(game.currentPlayer);
+    infoBox.innerText = 'current: '+game.playerRepr(game.currentPlayer);
     infoBox.className = '';
 }
 reset();
